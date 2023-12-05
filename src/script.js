@@ -5,6 +5,14 @@ const canvas = document.querySelector(".webGL");
 
 const clock = new THREE.Clock();
 
+const image = new Image();
+const texture = new THREE.Texture(image);
+
+image.onload = () => {
+    texture.needsUpdate = true
+};
+image.src = "/textures/door/roughness.jpg";
+
 const sizes = {
     width: window.innerWidth,
     height: window.innerHeight,
@@ -44,7 +52,7 @@ const scene = new THREE.Scene();
 const mesh = new THREE.Mesh(
     new THREE.BoxGeometry(1, 1, 1),
     new THREE.MeshBasicMaterial({
-        color: "red"
+        map: texture,
     }),
 );
 
