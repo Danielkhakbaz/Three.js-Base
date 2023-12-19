@@ -1,17 +1,17 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { FontLoader } from "three/examples/jsm/loaders/FontLoader";
+import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 
 const canvas = document.querySelector(".webGL");
 
 const clock = new THREE.Clock();
 
-const image = new Image();
-const texture = new THREE.Texture(image);
+const textureLoader = new THREE.TextureLoader();
 
-image.onload = () => {
-    texture.needsUpdate = true
-};
-image.src = "/textures/door/roughness.jpg";
+const doorTexture = textureLoader.load("/textures/door/door.jpg");
+const matcapTexture = textureLoader.load("/textures/matcaps/1.png");
+const matcap2Texture = textureLoader.load("/textures/matcaps/8.png");
 
 const sizes = {
     width: window.innerWidth,
@@ -49,12 +49,57 @@ window.addEventListener("dblclick", () => {
 
 const scene = new THREE.Scene();
 
-const mesh = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 1, 1),
-    new THREE.MeshBasicMaterial({
-        map: texture,
-    }),
-);
+const fontLoader = new FontLoader();
+
+fontLoader.load("/fonts/helvetiker_regular.typeface.json", (font) => {
+    const textGeometry = new TextGeometry("Danial", {
+        font: font,
+        size: 0.5,
+        height: 0.2,
+        curveSegments: 12,
+        bevelEnabled: true,
+        bevelThickness: 0.03,
+        bevelSize: 0.02,
+        bevelOffset: 0,
+        bevelSegments: 5
+    });
+
+    textGeometry.center();
+
+    const textMaterial = new THREE.MeshMatcapMaterial({
+        matcap: matcapTexture
+    });
+
+    const text = new THREE.Mesh(textGeometry, textMaterial);
+
+    scene.add(text);
+})
+
+const donutGeometry = new THREE.TorusGeometry(0.3,0.2,20,45);
+const donutMaterial = new THREE.MeshMatcapMaterial({
+    matcap: matcap2Texture,
+});
+    
+for (let i=0; i<99;i++) {
+    const donut = new THREE.Mesh(donutGeometry, donutMaterial);
+
+    donut.position.set((Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10);
+
+    donut.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+
+    const scale = Math.random();
+
+    donut.scale.set(scale, scale, scale);
+
+    scene.add(donut);
+}
+
+// const mesh = new THREE.Mesh(
+//     new THREE.BoxGeometry(1, 1, 1),
+//     new THREE.MeshBasicMaterial({
+//         map: doorTexture,
+//     }),
+// );
 
 const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 0.1, 100);
 
@@ -64,7 +109,7 @@ const controls = new OrbitControls(camera, canvas);
 
 controls.enableDamping = true;
 
-scene.add(mesh);
+// scene.add(mesh);
 scene.add(camera);
 
 const renderer = new THREE.WebGLRenderer({
@@ -74,13 +119,13 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height);
 
 const animation = () => {
+    renderer.render(scene, camera);
     const elapsedTime = clock.getElapsedTime();
 
-    mesh.rotation.y = elapsedTime * Math.PI * 0.5;
+    // mesh.rotation.y = elapsedTime * Math.PI * 0.5;
 
     requestAnimationFrame(animation);
 
-    renderer.render(scene, camera);
 };
 
 animation();
